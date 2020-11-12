@@ -53,9 +53,9 @@ function list() {
     echo "Searching for matching files in $currentDir"
 
     # Workaround: Create temporary script
-    echo find . "${findArgs[@]}" -type f > "$TMP_DIR"/script1.sh
+    echo find . "${findArgs[@]}" -type f > "$TMP_DIR/script1.sh"
 
-    for file in $(sh "$TMP_DIR"/script1.sh) ; do
+    for file in $(sh "$TMP_DIR/script1.sh") ; do
       	echo "Extracting $file in $currentDir..."
       	extract "${file}"
       	echo "Extracting $file in $currentDir DONE"
@@ -65,11 +65,12 @@ function list() {
       	cd "$currentDir" || exit
     done
 
-    rm -f "$TMP_DIR"/script1.sh
+    rm -f "$TMP_DIR/script1.sh"
 }
 
-# shellcheck disable=SC2164
-(cd "$INPUT_DIR" ; tar cf - .) | (cd "$WORK_DIR" ; tar xf -)
+mkdir -p "$INPUT_DIR" "$WORK_DIR" "$TMP_DIR" "$SCRIPT_DIR" "$OUTPUT_DIR"
+
+ln "$INPUT_DIR"/* "$WORK_DIR"
 
 getFindPattern
 
@@ -77,4 +78,4 @@ getFindPattern
 cd "$WORK_DIR"
 list
 
-read -p "Press any key to continue ..."
+read -rp "Press any key to continue ..."
