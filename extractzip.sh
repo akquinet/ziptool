@@ -2,6 +2,7 @@
 
 shopt -s nullglob
 
+if [ ]
 CONFIG_DIR="/tmp/extractzip"
 PATTERN_FILE="$CONFIG_DIR/patterns.txt"
 INPUT_DIR="$CONFIG_DIR/input"
