@@ -2,27 +2,17 @@
 
 shopt -s nullglob
 
-if [ ]
-CONFIG_DIR="/tmp/extractzip"
-PATTERN_FILE="$CONFIG_DIR/patterns.txt"
-INPUT_DIR="$CONFIG_DIR/input"
-WORK_DIR="$CONFIG_DIR/work"
-TMP_DIR="$CONFIG_DIR/tmp"
-SCRIPT_DIR="$CONFIG_DIR/scripts"
-OUTPUT_DIR="$CONFIG_DIR/output"
-
-mkdir -p $INPUT_DIR
-mkdir -p $WORK_DIR
-mkdir -p $TMP_DIR
-mkdir -p $SCRIPT_DIR
-mkdir -p $OUTPUT_DIR
+if [ "${CONFIG_DIR}" = '' ] ; then
+    echo Incomplete configuration: Missing CONFIG_DIR environment variable
+    exit
+fi
 
 function getFindPattern() {
   local patterns
   local i=0
 
   if [[ -f "$PATTERN_FILE" ]] ; then
-    patterns=$(cat $PATTERN_FILE)
+    patterns=$(cat "$PATTERN_FILE")
   else
     patterns=$(cat << __EOF__
 \*.zip
@@ -63,9 +53,9 @@ function list() {
     echo "Searching for matching files in $currentDir"
 
     # Workaround: Create temporary script
-    echo find . "${findArgs[@]}" -type f > $TMP_DIR/script.sh
+    echo find . "${findArgs[@]}" -type f > "$TMP_DIR"/script1.sh
 
-    for file in $(sh $TMP_DIR/script.sh) ; do
+    for file in $(sh "$TMP_DIR"/script1.sh) ; do
       	echo "Extracting $file in $currentDir..."
       	extract "${file}"
       	echo "Extracting $file in $currentDir DONE"
@@ -75,14 +65,16 @@ function list() {
       	cd "$currentDir" || exit
     done
 
-    rm -f $TMP_DIR/script.sh
+    rm -f "$TMP_DIR"/script1.sh
 }
 
 # shellcheck disable=SC2164
-(cd $INPUT_DIR ; tar cf - .) | (cd $WORK_DIR ; tar xf -)
+(cd "$INPUT_DIR" ; tar cf - .) | (cd "$WORK_DIR" ; tar xf -)
 
 getFindPattern
 
 # shellcheck disable=SC2164
-cd $WORK_DIR
+cd "$WORK_DIR"
 list
+
+read -p "Press any key to continue ..."

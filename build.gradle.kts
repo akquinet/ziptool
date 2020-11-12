@@ -13,8 +13,10 @@ docker {
 }
 
 dockerRun {
-  name="test"
-  image="mdahm/${project.name}:${project.version}"
-  volumes(mapOf("examples" to "/tmp/ziptool"))
-  arguments("--rm")
+  name = "test"
+  image = "mdahm/${project.name}:${project.version}"
+  clean = true
+
+  volumes(mapOf("./examples" to "/tmp/ziptool"))
+  arguments("-it")
 }
