@@ -43,10 +43,10 @@ __EOF__
   findArgs[0]=$(echo "${findArgs[0]}" | cut -c4-100)
 
   # Workaround: Create temporary script
-  script="$TMP_DIR/script.sh"
-  command="find . "${findArgs[@]}" -type f"
+  unzip_find_script="$TMP_DIR/unzip_find_script.sh"
+  unzip_find_command="find . "${findArgs[@]}" -type f"
 
-  echo "$command" >"$script"
+  echo "$unzip_find_command" > "$unzip_find_script"
 }
 
 function extract() {
@@ -69,9 +69,9 @@ function listAndExtract() {
   local currentDir=$PWD
 
   echo "Searching for matching files in $currentDir"
-  echo "Running $command ......"
+  echo "Running $unzip_find_command ......"
 
-  for file in $(sh "$script"); do
+  for file in $(sh "$unzip_find_script"); do
     echo "Extracting $file in $currentDir..."
     extract "${file}"
     echo "Extracting $file in $currentDir DONE"
@@ -97,6 +97,9 @@ cd "$WORK_DIR"
 listAndExtract
 
 echo Executing provided scripts ...
+# shellcheck disable=SC2164
+cd "$WORK_DIR"
+
 # shellcheck disable=SC1090
 bash "$SCRIPT_DIR"/*.sh
 
