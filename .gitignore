@@ -1,0 +1,9 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+.idea
+# Ignore Gradle build output directory
+build
+/examples/work/springbootwildfly.war/
+/examples/tmp/*
+/examples/output/*
+/examples/patterns.txt
