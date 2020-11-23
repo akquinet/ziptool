@@ -11,10 +11,8 @@ function getFindPattern() {
   local patterns
   local i=0
 
-  if [[ -f "$PATTERN_FILE" ]] ; then
-    patterns=$(cat "$PATTERN_FILE")
-  else
-    patterns=$(cat << __EOF__
+  if [[ ! -f "$PATTERN_FILE" ]] ; then
+    cat << __EOF__ > "$PATTERN_FILE"
 \*.zip
 \*.ear
 \*.sar
@@ -22,17 +20,33 @@ function getFindPattern() {
 \*.jar
 \*.ejb
 __EOF__
-)
   fi
 
-  echo "Looking for ZIP files matching ${patterns//$'\n'/ } in $INPUT_DIR"
+  while read -r pattern ; do
+    echo Pattern $i = "$pattern"
+    patterns[$i]=$pattern
+    findArgs[$i]="-o -name $pattern"
 
-  for arg in $patterns; do
-    findArgs[$i]="-o -name $arg"
     ((++i))
-  done
+  done < "$PATTERN_FILE"
 
-  findArgs[0]=$(echo "${findArgs[0]}" | cut -c3-100)
+  local size="${#findArgs[@]}"
+
+  # shellcheck disable=SC2145
+  echo "Looking for files matching ${patterns[@]//$'\n'/ } ($size patterns) in $INPUT_DIR"
+
+  if [ "$size" == 0 ] ; then
+     echo Invalid number of patterns
+    exit
+  fi
+
+  findArgs[0]=$(echo "${findArgs[0]}" | cut -c4-100)
+
+  # Workaround: Create temporary script
+  script="$TMP_DIR/script.sh"
+  command="find . "${findArgs[@]}" -type f"
+
+  echo "$command" > "$script"
 }
 
 function extract() {
@@ -51,11 +65,9 @@ function list() {
     local currentDir=$PWD
 
     echo "Searching for matching files in $currentDir"
+    echo "Running $command ......"
 
-    # Workaround: Create temporary script
-    echo find . "${findArgs[@]}" -type f > "$TMP_DIR/script1.sh"
-
-    for file in $(sh "$TMP_DIR/script1.sh") ; do
+    for file in $(sh "$script") ; do
       	echo "Extracting $file in $currentDir..."
       	extract "${file}"
       	echo "Extracting $file in $currentDir DONE"
@@ -64,18 +76,18 @@ function list() {
       	list
       	cd "$currentDir" || exit
     done
+}
 
-    rm -f "$TMP_DIR/script1.sh"
+function wait() {
+    read -rp "Press any key to continue ..."
 }
 
 mkdir -p "$INPUT_DIR" "$WORK_DIR" "$TMP_DIR" "$SCRIPT_DIR" "$OUTPUT_DIR"
 
-ln "$INPUT_DIR"/* "$WORK_DIR"
+ln -f "$INPUT_DIR"/* "$WORK_DIR"
 
 getFindPattern
 
 # shellcheck disable=SC2164
 cd "$WORK_DIR"
 list
-
-read -rp "Press any key to continue ..."
