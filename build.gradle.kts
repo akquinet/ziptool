@@ -9,7 +9,7 @@ docker {
   name = "mdahm/${project.name}:${project.version}"
 //  tags("latest")
 
-  files("extractzip.sh")
+  files("ziptool.sh")
 }
 
 dockerRun {

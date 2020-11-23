@@ -11,9 +11,9 @@ ENV OUTPUT_DIR="$CONFIG_DIR/output"
 RUN mkdir -p $INPUT_DIR $WORK_DIR $TMP_DIR $SCRIPT_DIR $OUTPUT_DIR
 RUN apk add bash unzip
 
-ADD extractzip.sh /
-RUN chmod 755 /extractzip.sh
+ADD ziptool.sh /
+RUN chmod 755 /ziptool.sh
 
 VOLUME /tmp/ziptool
 
-ENTRYPOINT ["/extractzip.sh"]
+ENTRYPOINT ["/ziptool.sh"]
