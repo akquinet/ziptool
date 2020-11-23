@@ -9,7 +9,7 @@ ENV SCRIPT_DIR="$CONFIG_DIR/scripts"
 ENV OUTPUT_DIR="$CONFIG_DIR/output"
 
 RUN mkdir -p $INPUT_DIR $WORK_DIR $TMP_DIR $SCRIPT_DIR $OUTPUT_DIR
-RUN apk add bash unzip
+RUN apk add bash unzip zip
 
 ADD ziptool.sh /
 RUN chmod 755 /ziptool.sh

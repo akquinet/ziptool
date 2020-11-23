@@ -44,9 +44,12 @@ __EOF__
 
   # Workaround: Create temporary script
   unzip_find_script="$TMP_DIR/unzip_find_script.sh"
+  zip_find_script="$TMP_DIR/zip_find_script.sh"
   unzip_find_command="find . "${findArgs[@]}" -type f"
+  zip_find_command="find \$PWD "${findArgs[@]}" -type d | tac"
 
   echo "$unzip_find_command" > "$unzip_find_script"
+  echo "$zip_find_command" > "$zip_find_script"
 }
 
 function extract() {
@@ -63,6 +66,17 @@ function extract() {
       rm jens
     )
   fi
+}
+
+function compress_zip() {
+  local currentDir=$PWD
+  # shellcheck disable=SC2155
+  local fileName=$(basename "$currentDir")
+
+  cd ..
+  mv "$fileName" jens
+  (cd jens || exit ; zip -r ../"$fileName" .)
+  rm -rf jens
 }
 
 function listAndExtract() {
@@ -82,6 +96,21 @@ function listAndExtract() {
   done
 }
 
+function listAndCompress() {
+  local currentDir=$PWD
+
+  echo "Searching for matching files in $currentDir"
+  echo "Running $zip_find_command ......"
+
+  for file in $(sh "$zip_find_script"); do
+    cd "${file}" || exit
+
+    echo "Zipping $file in $currentDir..."
+    compress_zip
+    echo "Zipping $file in $currentDir DONE"
+  done
+}
+
 function wait() {
   read -rp "Press any key to continue ..."
 }
@@ -97,9 +126,14 @@ cd "$WORK_DIR"
 listAndExtract
 
 echo Executing provided scripts ...
+
 # shellcheck disable=SC2164
 cd "$WORK_DIR"
 
 # shellcheck disable=SC1090
 bash "$SCRIPT_DIR"/*.sh
 
+listAndCompress
+
+# shellcheck disable=SC2164
+mv "$WORK_DIR"/* "$OUTPUT_DIR"
